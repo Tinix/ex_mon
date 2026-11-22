@@ -10,7 +10,7 @@ defmodule ExMon do
         player
 
       {:error, reason} = error ->
-        Status.print_error_message(reason)
+        Status.print_error(reason)
         error
     end
   end
@@ -20,34 +20,28 @@ defmodule ExMon do
 
     case Game.start(computer, player) do
       {:ok, result, game} ->
-        if result == :replaced, do: Status.print_replaced_message()
-        Status.print_round_message(game)
+        if result == :replaced, do: Status.print_replaced()
+        Status.print_round(game)
 
       {:error, reason} = error ->
-        Status.print_error_message(reason)
+        Status.print_error(reason)
         error
     end
   end
 
   def make_move(move) do
     case Game.play(move) do
-      {:ok, events, _game} ->
-        Enum.each(events, &print_event/1)
+      {:ok, events, game} ->
+        Enum.each(events, &Status.print_event/1)
+        Status.print_round(game)
 
-      {:error, :invalid_move, _game} ->
-        Status.print_wrong_move_message(move)
-
-      {:error, :game_over, game} ->
-        Status.print_round_message(game)
-
-      {:error, reason, _game} ->
-        Status.print_error_message(reason)
+      {:error, reason, game} ->
+        report_error(reason, move, game)
         {:error, reason}
     end
   end
 
-  defp print_event(%{game: game} = event) do
-    Status.print_move_message(event)
-    Status.print_round_message(game)
-  end
+  defp report_error(:invalid_move, move, game), do: Status.print_invalid_move(move, game)
+  defp report_error(:game_over, _move, game), do: Status.print_round(game)
+  defp report_error(reason, _move, _game), do: Status.print_error(reason)
 end

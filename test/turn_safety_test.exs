@@ -23,7 +23,7 @@ defmodule ExMon.TurnSafetyTest do
           |> Task.await_many()
         end)
 
-      assert length(Regex.scan(~r/The player attacked the computer/, output)) == 2
+      assert length(Regex.scan(~r/Tinix used kick/, output)) == 2
       assert Game.info().turn == :player
     end
   end

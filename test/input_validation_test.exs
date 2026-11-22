@@ -57,7 +57,7 @@ defmodule ExMon.InputValidationTest do
     before = Game.info()
 
     for move <- [{:a}, %{}, self(), [:a], nil, "kick", :move_avg, <<255>>] do
-      output = capture_io(fn -> ExMon.make_move(move) end)
+      output = capture_io(fn -> assert ExMon.make_move(move) == {:error, :invalid_move} end)
 
       assert output =~ "Invalid move"
       assert Game.info() == before

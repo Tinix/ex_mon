@@ -29,9 +29,8 @@ defmodule ExMonTest do
           assert ExMon.start_game(player) == :ok
         end)
 
-      assert messages =~ "The game is started!"
-      assert messages =~ "status: :started"
-      assert messages =~ "turn: :player"
+      assert messages =~ "The game has started!"
+      assert %{status: :started, turn: :player} = ExMon.Game.info()
     end
   end
 
@@ -50,22 +49,22 @@ defmodule ExMonTest do
     test "when the move is valid, do the move and the computer makes a move" do
       messages =
         capture_io(fn ->
-          ExMon.make_move(:kick)
+          assert ExMon.make_move(:kick) == :ok
         end)
 
-      assert messages =~ "The player attacked the computer"
-      assert messages =~ "It's computer turn"
-      assert messages =~ "It's player turn"
-      assert messages =~ "status: :continue"
+      assert messages =~ "Tinix used kick"
+      assert messages =~ "Robotinix used"
+      assert messages =~ "Your turn!"
+      assert %{status: :continue} = ExMon.Game.info()
     end
 
-    test "when the move is invalid, returns the current status" do
+    test "when the move is invalid, returns an error and lists the valid moves" do
       messages =
         capture_io(fn ->
-          ExMon.make_move(:wrong)
+          assert ExMon.make_move(:wrong) == {:error, :invalid_move}
         end)
 
-      assert messages =~ "Invalid move: :wrong"
+      assert messages =~ "Invalid move: :wrong. Your moves: :kick, :punch, :heal"
     end
   end
 
@@ -76,11 +75,11 @@ defmodule ExMonTest do
     end
 
     test "the player can use the average attack" do
-      assert capture_io(fn -> ExMon.make_move(:punch) end) =~ "attacked"
+      assert capture_io(fn -> ExMon.make_move(:punch) end) =~ "Tinix used punch"
     end
 
     test "the player can heal" do
-      assert capture_io(fn -> ExMon.make_move(:heal) end) =~ "healed"
+      assert capture_io(fn -> ExMon.make_move(:heal) end) =~ "Tinix used heal"
     end
 
     test "attacking until the end finishes the game" do
@@ -92,6 +91,12 @@ defmodule ExMonTest do
 
       assert status == :game_over
       assert 0 in [player.life, computer.life]
+
+      output =
+        capture_io(fn -> assert ExMon.make_move(:heal) == {:error, :game_over} end)
+
+      assert output =~ "wins!"
+      assert output =~ "start a new game"
     end
   end
 end

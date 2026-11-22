@@ -1,59 +1,67 @@
 defmodule ExMon.Game.Status do
-  def print_round_message(%{status: :started} = info) do
-    IO.puts("\n===== The game is started! =====\n")
-    IO.inspect(info)
-    IO.puts("==============================\n")
+  alias ExMon.Player
+
+  @move_order [:move_rnd, :move_avg, :move_heal]
+
+  def print_round(%{player: player, computer: computer} = game) do
+    width = max(String.length(player.name), String.length(computer.name))
+
+    IO.puts("""
+
+    ===== #{headline(game)} =====
+    #{life_line(player, width)}
+    #{life_line(computer, width)}
+    #{next_step(game)}
+    """)
   end
 
-  def print_round_message(%{status: :continue, turn: player} = info) do
-    IO.puts("\n===== It's #{player} turn! =====\n")
-    IO.inspect(info)
-    IO.puts("==============================\n")
+  def print_event(%{actor: actor, move: move, amount: amount, game: game}) do
+    user = Map.fetch!(game, actor)
+    name = Map.fetch!(user.moves, move)
+
+    IO.puts("#{user.name} used #{name}: #{effect(move, actor, amount, game)}")
   end
 
-  def print_round_message(%{status: :game_over} = info) do
-    IO.puts("\n===== The game is over! =====\n")
-    IO.inspect(info)
-    IO.puts("==============================\n")
+  def print_replaced, do: IO.puts("The previous game was discarded.")
+
+  def print_invalid_move(input, %{player: player}) do
+    IO.puts("Invalid move: #{inspect(input)}. Your moves: #{move_names(player)}")
   end
 
-  def print_replaced_message do
-    IO.puts("\n===== The previous game was discarded. =====\n")
-  end
+  def print_error(reason), do: IO.puts(error_text(reason))
 
-  def print_error_message(reason), do: IO.puts("\n===== #{error_text(reason)} =====\n")
+  defp headline(%{status: :started}), do: "The game has started!"
+  defp headline(%{status: :continue}), do: "Your turn!"
+  defp headline(%{status: :game_over} = game), do: "Game over: #{winner(game).name} wins!"
 
-  def print_wrong_move_message(move) do
-    IO.puts("\n===== Invalid move: #{inspect(move)}! =====\n")
-  end
+  defp winner(%{player: %{life: 0}, computer: computer}), do: computer
+  defp winner(%{player: player}), do: player
 
-  def print_move_message(%{actor: actor, move: :move_heal, game: game}) do
-    life = Map.fetch!(game, actor).life
-    IO.puts("\n===== The #{actor} healed itself to #{life} life of points. =====\n")
-  end
+  defp life_line(player, width),
+    do: "#{String.pad_trailing(player.name, width)}  #{life(player)}"
 
-  def print_move_message(%{actor: :player, amount: damage}) do
-    IO.puts(
-      "\n===== The player attacked the computer dealing #{damage} points of damage. =====\n"
-    )
-  end
+  defp life(player), do: "#{player.life}/#{Player.max_life()}"
 
-  def print_move_message(%{actor: :computer, amount: damage}) do
-    IO.puts(
-      "\n===== The computer attacked the player dealing #{damage} points of damage. =====\n"
-    )
-  end
+  defp next_step(%{status: :game_over}), do: "Use ExMon.start_game/1 to start a new game."
+  defp next_step(%{player: player}), do: "Your moves: #{move_names(player)}"
+
+  defp move_names(%{moves: moves}),
+    do: Enum.map_join(@move_order, ", ", &inspect(Map.fetch!(moves, &1)))
+
+  defp effect(:move_heal, actor, amount, game),
+    do: "restored #{amount} life (#{life(Map.fetch!(game, actor))})."
+
+  defp effect(_attack, :player, amount, %{computer: target}), do: damage(target, amount)
+  defp effect(_attack, :computer, amount, %{player: target}), do: damage(target, amount)
+
+  defp damage(target, amount), do: "#{amount} damage to #{target.name} (#{life(target)})."
 
   defp error_text(:game_not_started),
     do: "There is no game in progress. Use ExMon.start_game/1 first."
 
   defp error_text(:not_your_turn), do: "It is not your turn."
-
-  defp error_text(:invalid_player),
-    do: "Invalid player. Create one with ExMon.create_player/4."
-
+  defp error_text(:invalid_player), do: "Invalid player. Create one with ExMon.create_player/4."
   defp error_text(:invalid_name), do: "The player name must be a non-empty string."
-
   defp error_text(:invalid_moves), do: "Move names must be non-empty atoms or strings."
   defp error_text(:duplicate_moves), do: "The moves must have three different names."
 end
