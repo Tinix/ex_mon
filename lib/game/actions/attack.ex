@@ -1,32 +1,23 @@
 defmodule ExMon.Game.Actions.Attack do
-  alias ExMon.Game
+  alias ExMon.{Game, Player}
   alias ExMon.Game.Status
 
   @move_avg_power 18..25
   @move_rnd_power 10..35
 
-  def attack_opponent(opponent, move) do
-    damage = calculate_power(move)
+  def attack_opponent(opponent, move, random \\ &Enum.random/1) do
+    damage = power(move, random)
 
     opponent
     |> Game.fetch_player()
-    |> Map.get(:life)
-    |> calculate_total_life(damage)
-    |> update_opponent_life(opponent, damage)
-  end
-
-  defp calculate_power(:move_avg), do: Enum.random(@move_avg_power)
-  defp calculate_power(:move_rnd), do: Enum.random(@move_rnd_power)
-
-  defp calculate_total_life(life, damage) when life - damage < 0, do: 0
-  defp calculate_total_life(life, damage), do: life - damage
-
-  defp update_opponent_life(life, opponent, damage) do
-    opponent
-    |> Game.fetch_player()
-    |> Map.put(:life, life)
+    |> hit(damage)
     |> update_game(opponent, damage)
   end
+
+  def power(:move_avg, random), do: random.(@move_avg_power)
+  def power(:move_rnd, random), do: random.(@move_rnd_power)
+
+  def hit(%Player{life: life} = player, damage), do: %{player | life: max(life - damage, 0)}
 
   defp update_game(player, opponent, damage) do
     Game.info()

@@ -64,4 +64,30 @@ defmodule ExMonTest do
       assert messages =~ "Invalid move: wrong"
     end
   end
+
+  describe "a complete game" do
+    setup do
+      capture_io(fn -> ExMon.start_game(Player.build("Tinix", :kick, :punch, :heal)) end)
+      :ok
+    end
+
+    test "the player can use the average attack" do
+      assert capture_io(fn -> ExMon.make_move(:punch) end) =~ "attacked"
+    end
+
+    test "the player can heal" do
+      assert capture_io(fn -> ExMon.make_move(:heal) end) =~ "healed"
+    end
+
+    test "attacking until the end finishes the game" do
+      capture_io(fn ->
+        Enum.each(1..100, fn _ -> ExMon.make_move(:punch) end)
+      end)
+
+      %{status: status, player: player, computer: computer} = ExMon.Game.info()
+
+      assert status == :game_over
+      assert 0 in [player.life, computer.life]
+    end
+  end
 end

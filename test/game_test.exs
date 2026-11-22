@@ -19,7 +19,7 @@ defmodule ExMon.GameTest do
 
       Game.start(computer, player)
 
-      experected_response = %{
+      expected_response = %{
         computer: %Player{
           life: 100,
           moves: %{move_avg: :punch, move_heal: :heal, move_rnd: :kick},
@@ -34,7 +34,7 @@ defmodule ExMon.GameTest do
         turn: :player
       }
 
-      assert experected_response == Game.info()
+      assert expected_response == Game.info()
     end
   end
 
@@ -45,7 +45,7 @@ defmodule ExMon.GameTest do
 
       Game.start(computer, player)
 
-      experected_response = %{
+      expected_response = %{
         computer: %Player{
           life: 100,
           moves: %{move_avg: :punch, move_heal: :heal, move_rnd: :kick},
@@ -60,7 +60,7 @@ defmodule ExMon.GameTest do
         turn: :player
       }
 
-      assert experected_response == Game.info()
+      assert expected_response == Game.info()
 
       new_state = %{
         computer: %Player{
@@ -79,9 +79,9 @@ defmodule ExMon.GameTest do
 
       Game.update(new_state)
 
-      experected_response = %{new_state | turn: :computer, status: :continue}
+      expected_response = %{new_state | turn: :computer, status: :continue}
 
-      assert experected_response == Game.info()
+      assert expected_response == Game.info()
     end
   end
 end
