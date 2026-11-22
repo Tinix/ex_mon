@@ -2,9 +2,12 @@ defmodule ExMon.Game do
   use Agent
   alias ExMon.Player
 
+  def start_link(_opts), do: Agent.start_link(fn -> nil end, name: __MODULE__)
+
   def start(computer, player) do
-    initial_value = %{computer: computer, player: player, turn: :player, status: :started}
-    Agent.start_link(fn -> initial_value end, name: __MODULE__)
+    game = %{computer: computer, player: player, turn: :player, status: :started}
+
+    Agent.get_and_update(__MODULE__, fn previous -> {{:ok, start_result(previous)}, game} end)
   end
 
   def info do
@@ -18,6 +21,9 @@ defmodule ExMon.Game do
   def player, do: Map.get(info(), :player)
   def turn, do: Map.get(info(), :turn)
   def fetch_player(player), do: Map.get(info(), player)
+
+  defp start_result(%{status: status}) when status != :game_over, do: :replaced
+  defp start_result(_previous), do: :started
 
   defp update_game_status(
          %{player: %Player{life: player_life}, computer: %Player{life: computer_life}} = state

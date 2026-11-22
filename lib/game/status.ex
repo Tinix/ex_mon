@@ -17,6 +17,14 @@ defmodule ExMon.Game.Status do
     IO.puts("==============================\n")
   end
 
+  def print_replaced_message do
+    IO.puts("\n===== The previous game was discarded. =====\n")
+  end
+
+  def print_no_game_message do
+    IO.puts("\n===== There is no game in progress. Use ExMon.start_game/1 first. =====\n")
+  end
+
   def print_wrong_move_message(move) do
     IO.puts("\n===== Invalid move: #{move}! =====\n")
   end

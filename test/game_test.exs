@@ -1,14 +1,18 @@
 defmodule ExMon.GameTest do
   use ExUnit.Case
 
-  alias ExMon.{Game, Player}
+  alias ExMon.{Game, GameCase, Player}
+
+  setup do
+    GameCase.reset_game()
+  end
 
   describe "start/2" do
     test "starts the game state" do
       player = Player.build("Tinix", :kick, :punch, :heal)
       computer = Player.build("Robotinix", :kick, :punch, :heal)
 
-      assert {:ok, _pid} = Game.start(computer, player)
+      assert {:ok, :started} = Game.start(computer, player)
     end
   end
 

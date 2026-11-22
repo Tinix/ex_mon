@@ -1,8 +1,12 @@
 defmodule ExMonTest do
   use ExUnit.Case
-  alias ExMon.Player
+  alias ExMon.{GameCase, Player}
 
   import ExUnit.CaptureIO
+
+  setup do
+    GameCase.reset_game()
+  end
 
   describe "create_player/4" do
     test "returns a player" do

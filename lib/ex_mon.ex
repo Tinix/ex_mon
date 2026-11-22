@@ -10,17 +10,23 @@ defmodule ExMon do
   end
 
   def start_game(player) do
-    @computer_name
-    |> create_player(:punch, :kick, :heal)
-    |> Game.start(player)
+    computer = create_player(@computer_name, :punch, :kick, :heal)
+
+    {:ok, result} = Game.start(computer, player)
+    if result == :replaced, do: Status.print_replaced_message()
 
     Status.print_round_message(Game.info())
   end
 
   def make_move(move) do
-    Game.info()
-    |> Map.get(:status)
-    |> handle_status(move)
+    case Game.info() do
+      nil ->
+        Status.print_no_game_message()
+        {:error, :game_not_started}
+
+      %{status: status} ->
+        handle_status(status, move)
+    end
   end
 
   defp handle_status(:game_over, _move), do: Status.print_round_message(Game.info())
