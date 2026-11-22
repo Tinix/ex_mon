@@ -68,4 +68,19 @@ defmodule ExMon.Game.StatusTest do
     assert capture_io(fn -> Status.print_event(event) end) =~
              "Tinix used heal: restored 0 life (100/100)."
   end
+
+  test "every error has a readable message" do
+    messages = %{
+      game_not_started: "no game in progress",
+      not_your_turn: "not your turn",
+      invalid_player: "Invalid player",
+      invalid_name: "non-empty string",
+      invalid_moves: "non-empty atoms or strings",
+      duplicate_moves: "three different names"
+    }
+
+    for {reason, text} <- messages do
+      assert capture_io(fn -> Status.print_error(reason) end) =~ text
+    end
+  end
 end
