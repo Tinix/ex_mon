@@ -6,22 +6,34 @@ defmodule ExMon do
   @computer_moves [:move_avg, :move_rnd, :move_heal]
 
   def create_player(name, move_rnd, move_avg, move_heal) do
-    Player.build(name, move_rnd, move_avg, move_heal)
+    case Player.build(name, move_rnd, move_avg, move_heal) do
+      %Player{} = player ->
+        player
+
+      {:error, reason} = error ->
+        Status.print_error_message(reason)
+        error
+    end
   end
 
   def start_game(player) do
-    computer = create_player(@computer_name, :punch, :kick, :heal)
+    computer = Player.build(@computer_name, :punch, :kick, :heal)
 
-    {:ok, result} = Game.start(computer, player)
-    if result == :replaced, do: Status.print_replaced_message()
+    case Game.start(computer, player) do
+      {:ok, result} ->
+        if result == :replaced, do: Status.print_replaced_message()
+        Status.print_round_message(Game.info())
 
-    Status.print_round_message(Game.info())
+      {:error, reason} = error ->
+        Status.print_error_message(reason)
+        error
+    end
   end
 
   def make_move(move) do
     case Game.info() do
       nil ->
-        Status.print_no_game_message()
+        Status.print_error_message(:game_not_started)
         {:error, :game_not_started}
 
       %{status: status} ->

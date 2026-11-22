@@ -65,7 +65,7 @@ defmodule ExMonTest do
           ExMon.make_move(:wrong)
         end)
 
-      assert messages =~ "Invalid move: wrong"
+      assert messages =~ "Invalid move: :wrong"
     end
   end
 

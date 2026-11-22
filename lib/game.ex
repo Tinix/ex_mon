@@ -5,9 +5,13 @@ defmodule ExMon.Game do
   def start_link(_opts), do: Agent.start_link(fn -> nil end, name: __MODULE__)
 
   def start(computer, player) do
-    game = %{computer: computer, player: player, turn: :player, status: :started}
+    if Player.valid?(computer) and Player.valid?(player) do
+      game = %{computer: computer, player: player, turn: :player, status: :started}
 
-    Agent.get_and_update(__MODULE__, fn previous -> {{:ok, start_result(previous)}, game} end)
+      Agent.get_and_update(__MODULE__, fn previous -> {{:ok, start_result(previous)}, game} end)
+    else
+      {:error, :invalid_player}
+    end
   end
 
   def info do

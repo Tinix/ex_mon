@@ -21,12 +21,10 @@ defmodule ExMon.Game.Status do
     IO.puts("\n===== The previous game was discarded. =====\n")
   end
 
-  def print_no_game_message do
-    IO.puts("\n===== There is no game in progress. Use ExMon.start_game/1 first. =====\n")
-  end
+  def print_error_message(reason), do: IO.puts("\n===== #{error_text(reason)} =====\n")
 
   def print_wrong_move_message(move) do
-    IO.puts("\n===== Invalid move: #{move}! =====\n")
+    IO.puts("\n===== Invalid move: #{inspect(move)}! =====\n")
   end
 
   def print_move_message(:computer, :attack, damage) do
@@ -44,4 +42,15 @@ defmodule ExMon.Game.Status do
   def print_move_message(player, :heal, life) do
     IO.puts("\n===== The #{player} healed itself to #{life} life of points. =====\n")
   end
+
+  defp error_text(:game_not_started),
+    do: "There is no game in progress. Use ExMon.start_game/1 first."
+
+  defp error_text(:invalid_player),
+    do: "Invalid player. Create one with ExMon.create_player/4."
+
+  defp error_text(:invalid_name), do: "The player name must be a non-empty string."
+
+  defp error_text(:invalid_moves), do: "Move names must be non-empty atoms or strings."
+  defp error_text(:duplicate_moves), do: "The moves must have three different names."
 end
