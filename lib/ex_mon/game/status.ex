@@ -1,8 +1,15 @@
 defmodule ExMon.Game.Status do
-  alias ExMon.Player
+  @moduledoc """
+  Everything the game prints.
+  """
+
+  alias ExMon.{Game, Player}
+  alias ExMon.Game.Actions
 
   @move_order [:move_rnd, :move_avg, :move_heal]
 
+  @doc "Prints both lives and what the player can do next."
+  @spec print_round(Game.state()) :: :ok
   def print_round(%{player: player, computer: computer} = game) do
     width = max(String.length(player.name), String.length(computer.name))
 
@@ -15,6 +22,8 @@ defmodule ExMon.Game.Status do
     """)
   end
 
+  @doc "Prints one action and its effect."
+  @spec print_event(Actions.event()) :: :ok
   def print_event(%{actor: actor, move: move, amount: amount, game: game}) do
     user = Map.fetch!(game, actor)
     name = Map.fetch!(user.moves, move)
@@ -22,12 +31,18 @@ defmodule ExMon.Game.Status do
     IO.puts("#{user.name} used #{name}: #{effect(move, actor, amount, game)}")
   end
 
+  @doc "Says that the game in progress was discarded."
+  @spec print_replaced() :: :ok
   def print_replaced, do: IO.puts("The previous game was discarded.")
 
+  @doc "Says that a move is invalid and lists the valid ones."
+  @spec print_invalid_move(term(), Game.state()) :: :ok
   def print_invalid_move(input, %{player: player}) do
     IO.puts("Invalid move: #{inspect(input)}. Your moves: #{move_names(player)}")
   end
 
+  @doc "Prints a readable message for an error."
+  @spec print_error(Game.error() | Player.error() | :invalid_player) :: :ok
   def print_error(reason), do: IO.puts(error_text(reason))
 
   defp headline(%{status: :started}), do: "The game has started!"

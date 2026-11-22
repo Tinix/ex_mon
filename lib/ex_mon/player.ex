@@ -1,12 +1,37 @@
 defmodule ExMon.Player do
+  @moduledoc """
+  The player struct and the rules for a valid player.
+  """
+
   @required_keys [:life, :moves, :name]
   @max_life 100
 
   @enforce_keys @required_keys
   defstruct @required_keys
 
+  @type move :: :move_rnd | :move_avg | :move_heal
+  @type move_name :: atom() | String.t()
+  @type error :: :invalid_name | :invalid_moves | :duplicate_moves
+  @type t :: %__MODULE__{
+          life: non_neg_integer(),
+          name: String.t(),
+          moves: %{move_rnd: move_name(), move_avg: move_name(), move_heal: move_name()}
+        }
+
+  @doc "Returns the maximum life, which is also the starting life."
+  @spec max_life() :: pos_integer()
   def max_life, do: @max_life
 
+  @doc """
+  Builds a player with full life, or explains why it cannot.
+
+  ## Examples
+
+      iex> ExMon.Player.build("Ada", :kick, :kick, :heal)
+      {:error, :duplicate_moves}
+
+  """
+  @spec build(term(), term(), term(), term()) :: t() | {:error, error()}
   def build(name, move_rnd, move_avg, move_heal) do
     moves = %{move_rnd: move_rnd, move_avg: move_avg, move_heal: move_heal}
 
@@ -16,7 +41,12 @@ defmodule ExMon.Player do
     end
   end
 
-  # Players are plain structs, so they can be edited by hand after being built.
+  @doc """
+  Tells whether the value is a player that can start a game.
+
+  Players are plain structs, so they can be edited by hand after being built.
+  """
+  @spec valid?(term()) :: boolean()
   def valid?(%__MODULE__{life: life, moves: moves, name: name})
       when is_integer(life) and life in 1..@max_life do
     validate_name(name) == :ok and validate_moves(moves) == :ok

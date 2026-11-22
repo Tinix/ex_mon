@@ -4,6 +4,8 @@ defmodule ExMonTest do
 
   import ExUnit.CaptureIO
 
+  doctest ExMon
+
   setup do
     GameCase.reset_game()
   end

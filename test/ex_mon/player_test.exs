@@ -3,6 +3,8 @@ defmodule ExMon.PlayerTest do
 
   alias ExMon.Player
 
+  doctest Player
+
   describe "build/4" do
     test "creates a player with full life and the three moves" do
       assert Player.build("Tinix", :kick, :punch, :heal) == %Player{

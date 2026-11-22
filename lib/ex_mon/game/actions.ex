@@ -1,8 +1,31 @@
 defmodule ExMon.Game.Actions do
+  @moduledoc """
+  The rules of a round, as pure functions over the game state.
+  """
+
+  alias ExMon.{Game, Player}
   alias ExMon.Game.Actions.{Attack, Heal}
 
   @computer_moves [:move_avg, :move_rnd, :move_heal]
 
+  @typedoc "Picks one element from a range or a list."
+  @type random :: (Enumerable.t() -> term())
+
+  @typedoc "One action of the round, with the game as it was right after it."
+  @type event :: %{
+          actor: Game.side(),
+          move: Player.move(),
+          amount: non_neg_integer(),
+          game: Game.state()
+        }
+
+  @doc """
+  Resolves the player's move and the computer's response.
+
+  `amount` in each event is the life that really changed, after applying the limits.
+  """
+  @spec play_round(Game.state() | nil, term(), random()) ::
+          {:ok, [event()], Game.state()} | {:error, Game.error()}
   def play_round(nil, _input, _random), do: {:error, :game_not_started}
   def play_round(%{status: :game_over}, _input, _random), do: {:error, :game_over}
 
