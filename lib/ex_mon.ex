@@ -1,9 +1,8 @@
 defmodule ExMon do
   alias ExMon.{Game, Player}
-  alias ExMon.Game.{Status, Actions}
+  alias ExMon.Game.Status
 
   @computer_name "Robotinix"
-  @computer_moves [:move_avg, :move_rnd, :move_heal]
 
   def create_player(name, move_rnd, move_avg, move_heal) do
     case Player.build(name, move_rnd, move_avg, move_heal) do
@@ -20,9 +19,9 @@ defmodule ExMon do
     computer = Player.build(@computer_name, :punch, :kick, :heal)
 
     case Game.start(computer, player) do
-      {:ok, result} ->
+      {:ok, result, game} ->
         if result == :replaced, do: Status.print_replaced_message()
-        Status.print_round_message(Game.info())
+        Status.print_round_message(game)
 
       {:error, reason} = error ->
         Status.print_error_message(reason)
@@ -31,41 +30,24 @@ defmodule ExMon do
   end
 
   def make_move(move) do
-    case Game.info() do
-      nil ->
-        Status.print_error_message(:game_not_started)
-        {:error, :game_not_started}
+    case Game.play(move) do
+      {:ok, events, _game} ->
+        Enum.each(events, &print_event/1)
 
-      %{status: status} ->
-        handle_status(status, move)
+      {:error, :invalid_move, _game} ->
+        Status.print_wrong_move_message(move)
+
+      {:error, :game_over, game} ->
+        Status.print_round_message(game)
+
+      {:error, reason, _game} ->
+        Status.print_error_message(reason)
+        {:error, reason}
     end
   end
 
-  defp handle_status(:game_over, _move), do: Status.print_round_message(Game.info())
-
-  defp handle_status(_other, move) do
-    move
-    |> Actions.fetch_move()
-    |> do_move()
-
-    computer_move(Game.info())
+  defp print_event(%{game: game} = event) do
+    Status.print_move_message(event)
+    Status.print_round_message(game)
   end
-
-  defp do_move({:error, move}), do: Status.print_wrong_move_message(move)
-
-  defp do_move({:ok, move}) do
-    case move do
-      :move_heal -> Actions.heal()
-      move -> Actions.attack(move)
-    end
-
-    Status.print_round_message(Game.info())
-  end
-
-  defp computer_move(%{turn: :computer, status: :continue}) do
-    move = {:ok, Enum.random(@computer_moves)}
-    do_move(move)
-  end
-
-  defp computer_move(_), do: :ok
 end

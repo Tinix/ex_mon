@@ -12,7 +12,7 @@ defmodule ExMon.GameTest do
       player = Player.build("Tinix", :kick, :punch, :heal)
       computer = Player.build("Robotinix", :kick, :punch, :heal)
 
-      assert {:ok, :started} = Game.start(computer, player)
+      assert {:ok, :started, _game} = Game.start(computer, player)
     end
   end
 
@@ -42,50 +42,28 @@ defmodule ExMon.GameTest do
     end
   end
 
-  describe "update/1" do
+  describe "play/2" do
     test "updates the game state" do
       player = Player.build("Tinix", :kick, :punch, :heal)
       computer = Player.build("Robotinix", :kick, :punch, :heal)
 
       Game.start(computer, player)
 
-      expected_response = %{
-        computer: %Player{
-          life: 100,
-          moves: %{move_avg: :punch, move_heal: :heal, move_rnd: :kick},
-          name: "Robotinix"
-        },
-        player: %Player{
-          life: 100,
-          moves: %{move_avg: :punch, move_heal: :heal, move_rnd: :kick},
-          name: "Tinix"
-        },
-        status: :started,
-        turn: :player
-      }
+      random = fn
+        options when is_list(options) -> :move_rnd
+        range -> Enum.min(range)
+      end
 
-      assert expected_response == Game.info()
+      assert {:ok, [_, _], game} = Game.play(:punch, random)
 
-      new_state = %{
-        computer: %Player{
-          life: 87,
-          moves: %{move_avg: :punch, move_heal: :heal, move_rnd: :kick},
-          name: "Robotinix"
-        },
-        player: %Player{
-          life: 91,
-          moves: %{move_avg: :punch, move_heal: :heal, move_rnd: :kick},
-          name: "Tinix"
-        },
-        status: :started,
-        turn: :player
-      }
+      assert game == %{
+               computer: %{computer | life: 82},
+               player: %{player | life: 90},
+               status: :continue,
+               turn: :player
+             }
 
-      Game.update(new_state)
-
-      expected_response = %{new_state | turn: :computer, status: :continue}
-
-      assert expected_response == Game.info()
+      assert game == Game.info()
     end
   end
 end

@@ -27,24 +27,27 @@ defmodule ExMon.Game.Status do
     IO.puts("\n===== Invalid move: #{inspect(move)}! =====\n")
   end
 
-  def print_move_message(:computer, :attack, damage) do
+  def print_move_message(%{actor: actor, move: :move_heal, game: game}) do
+    life = Map.fetch!(game, actor).life
+    IO.puts("\n===== The #{actor} healed itself to #{life} life of points. =====\n")
+  end
+
+  def print_move_message(%{actor: :player, amount: damage}) do
     IO.puts(
       "\n===== The player attacked the computer dealing #{damage} points of damage. =====\n"
     )
   end
 
-  def print_move_message(:player, :attack, damage) do
+  def print_move_message(%{actor: :computer, amount: damage}) do
     IO.puts(
-      "\n===== The computer attacked the player dealing #{damage}  points of damage. =====\n"
+      "\n===== The computer attacked the player dealing #{damage} points of damage. =====\n"
     )
-  end
-
-  def print_move_message(player, :heal, life) do
-    IO.puts("\n===== The #{player} healed itself to #{life} life of points. =====\n")
   end
 
   defp error_text(:game_not_started),
     do: "There is no game in progress. Use ExMon.start_game/1 first."
+
+  defp error_text(:not_your_turn), do: "It is not your turn."
 
   defp error_text(:invalid_player),
     do: "Invalid player. Create one with ExMon.create_player/4."
