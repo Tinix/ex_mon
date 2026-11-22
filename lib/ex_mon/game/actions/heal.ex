@@ -3,12 +3,13 @@ defmodule ExMon.Game.Actions.Heal do
   The healing range and how healing is applied.
   """
 
+  alias ExMon.Game.Actions
   alias ExMon.Player
 
   @heal_power 18..25
 
   @doc "Rolls how much life is restored."
-  @spec power((Range.t() -> integer())) :: integer()
+  @spec power(Actions.random()) :: integer()
   def power(random), do: random.(@heal_power)
 
   @doc "Restores life without going above the maximum."

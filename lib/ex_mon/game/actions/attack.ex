@@ -3,13 +3,14 @@ defmodule ExMon.Game.Actions.Attack do
   Damage ranges and how damage is applied.
   """
 
+  alias ExMon.Game.Actions
   alias ExMon.Player
 
   @move_avg_power 18..25
   @move_rnd_power 10..35
 
   @doc "Rolls the damage of an attack."
-  @spec power(:move_avg | :move_rnd, (Range.t() -> integer())) :: integer()
+  @spec power(:move_avg | :move_rnd, Actions.random()) :: integer()
   def power(:move_avg, random), do: random.(@move_avg_power)
   def power(:move_rnd, random), do: random.(@move_rnd_power)
 
